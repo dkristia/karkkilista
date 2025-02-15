@@ -43,9 +43,10 @@ export default function ListPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState("1");
   const [url, setUrl] = useState("");
   const [price, setPrice] = useState("");
+  const [fetchUrl, setFetchUrl] = useState("");
 
   useEffect(() => {
     onAuthStateChanged(auth, (currentUser) => {
@@ -98,7 +99,7 @@ export default function ListPage() {
       price,
     });
     setName("");
-    setAmount("");
+    setAmount("1");
     setUrl("");
     setPrice("");
   };
@@ -120,6 +121,28 @@ export default function ListPage() {
         .toFixed(2)
         .replace(".", ",") + "€"
     );
+  };
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(`/api/fetch-data?url=${encodeURIComponent(fetchUrl)}`);
+      const text = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(text, "text/html");
+
+      const nameElement = doc.querySelector('[itemprop="name"]');
+      const priceElement = doc.getElementsByClassName("price")[0];
+
+      const fetchedName: string = nameElement?.textContent ?? "";
+      const fetchedPrice: string = priceElement?.textContent ?? "";
+
+      setName(fetchedName);
+      setPrice(fetchedPrice ?? "");
+      setUrl(fetchUrl);
+      setFetchUrl("");
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
   return (
@@ -161,28 +184,32 @@ export default function ListPage() {
         )}
       </div>
       <div className="form-container">
+      <input
+          value={fetchUrl}
+          onChange={(e) => setFetchUrl(e.target.value)}
+          placeholder="Paste URL here"
+        />
+        <button onClick={fetchData}>Fetch Data</button>
+      </div>
+      <div className="form-container">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addItem()}
           placeholder="Käntty"
         />
         <input
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addItem()}
           placeholder="1"
         />
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addItem()}
           placeholder="https://wiki.paivola.fi/wiki/Käntty"
         />
         <input
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addItem()}
           placeholder="0,00€"
         />
         <button className="add" onClick={addItem}>
@@ -192,7 +219,11 @@ export default function ListPage() {
       <ul className="karkit">
         {items.map((item, index) => (
           <li className="karkki" key={index}>
-            {`${item.name} * ${item.amount} // ${item.url} // ${item.price}`}
+            {`${item.name} * ${item.amount} // `}
+            <a href={item.url} target="_blank" rel="noopener noreferrer">
+              {item.url}
+            </a>
+            {` // ${item.price}`}
             <button onClick={() => removeItem(item.id)}>Remove</button>
           </li>
         ))}
