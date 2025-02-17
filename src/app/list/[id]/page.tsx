@@ -39,12 +39,13 @@ export default function ListPage({
     username: string;
   } | null>(null);
   const [items, setItems] = useState<
-    { id: string; name: string; amount: string; url: string; price: string }[]
+    { id: string; name: string; amount: number; url: string; price: string }[]
   >([]);
   const [name, setName] = useState("");
-  const [amount, setAmount] = useState("1");
+  const [amount, setAmount] = useState(1);
   const [url, setUrl] = useState("");
-  const [price, setPrice] = useState("");
+  const [finalPrice, setFinalPrice] = useState("0,00€");
+  const [unitPrice, setUnitPrice] = useState("")
   const [id, setId] = useState<string | null>(null);
   const [fetchUrl, setFetchUrl] = useState("");
 
@@ -87,12 +88,13 @@ export default function ListPage({
       name,
       amount,
       url,
-      price,
+      price: finalPrice,
     });
     setName("");
-    setAmount("1");
+    setAmount(1);
     setUrl("");
-    setPrice("");
+    setUnitPrice("");
+    setFinalPrice("0,00€");
   };
 
   const removeItem = async (itemId: string) => {
@@ -130,12 +132,24 @@ export default function ListPage({
       const fetchedPrice: string = priceElement?.textContent ?? "";
 
       setName(fetchedName);
-      setPrice(fetchedPrice ?? "");
+      setUnitPrice(fetchedPrice ?? "");
+      setFinalPrice(fetchedPrice ?? "");
       setUrl(fetchUrl);
       setFetchUrl("");
     } catch (error) {
       console.error("Error fetching data:", error);
     }
+  };
+
+  const priceMultiply = (str: string, times: number) => {
+    return str ? ((parseFloat(str.replace(",", ".").replace("€", "")) * times).toFixed(2).replace(".", ",") + "€") : "0,00€";
+  }
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAmount = parseInt(e.target.value);
+    setAmount(newAmount);
+    const newPrice = priceMultiply(unitPrice, newAmount);
+    setFinalPrice(newPrice);
   };
 
   if (!listOwner) return <div>Loading...</div>;
@@ -161,7 +175,8 @@ export default function ListPage({
             />
             <input
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              type="number"
+              onChange={(e) => handleAmountChange(e)}
               placeholder="Amount"
             />
             <input
@@ -170,10 +185,13 @@ export default function ListPage({
               placeholder="Item URL"
             />
             <input
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="0,00€"
+              value={unitPrice}
+              onChange={(e) => {setUnitPrice(e.target.value); setFinalPrice(priceMultiply(e.target.value, amount))}}
+              placeholder="Unit price (0,00€)"
             />
+            <p>
+              Total price: {finalPrice}
+            </p>
             <button onClick={addItem}>Add Item</button>
           </div>
         </>
