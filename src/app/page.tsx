@@ -2,11 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  onAuthStateChanged,
-  User,
-} from "firebase/auth";
+
 import {
   getFirestore,
   collection,
@@ -14,6 +10,7 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { useRouter } from 'next/navigation';
+import TopBar from "@/components/TopBar";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -26,7 +23,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
 
 export default function HomePage() {
@@ -49,11 +45,12 @@ export default function HomePage() {
 
   return (
     <div>
-      <h1>Karkkilistat</h1>
-      <ul>
+      <TopBar listOwner={null} />
+      <h1 className="karkit">Karkkilistat</h1>
+      <ul className="karkit">
         {users.map((user) => (
           <li key={user.id}>
-            <a onClick={() => goToUserList(user.id)}>{user.username}</a>
+            <button className="list-button" onClick={() => goToUserList(user.id)}>{user.username}</button>
           </li>
         ))}
       </ul>
