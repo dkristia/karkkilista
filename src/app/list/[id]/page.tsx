@@ -191,7 +191,7 @@ export default function ListPage({
             )}
           </li>
         ))}
-        <li className="karkki" key="total">
+        <li className="karkki no-underline" key="total">
           Total: {calculateTotal()}
         </li>
       </ul>
