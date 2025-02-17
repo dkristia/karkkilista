@@ -24,6 +24,7 @@ export default async function handler(
         const text = await response.text();
         res.status(200).send(text);
     } catch (error) {
+        console.error('Error fetching data:', error);
         res.status(500).json({ error: 'Error fetching data' });
     }
 }
